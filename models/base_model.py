@@ -37,10 +37,7 @@ class BaseModel:
                     self.id = str(uuid.uuid4())
                 if 'created_at' not in kwargs:
                     self.created_at = datetime.now()
-
-                if 'created_at' in kwargs and 'updated_at' not in kwargs:
-                    self.updated_at = self.created_at
-                else:
+                if 'updated_at' not in kwargs:
                     self.updated_at = datetime.now()
         else:
             self.id = str(uuid.uuid4())
@@ -59,15 +56,13 @@ class BaseModel:
 
     def to_dict(self):
         """Convert instance into dict format"""
-        dictionary = {}
-        dictionary.update(self.__dict__)
-        dictionary.update({'__class__':
-                          (str(type(self)).split('.')[-1]).split('\'')[0]})
+        dictionary = dict(self.__dict__)
+        dictionary['__class__'] = str(type(self).__name__)
         dictionary['created_at'] = self.created_at.isoformat()
         dictionary['updated_at'] = self.updated_at.isoformat()
 
-        if dictionary['_sa_instance_state']:
-            dictionary.pop('_sa_instance_state')
+        if '_sa_instance_state' in dictionary.keys():
+            del dictionary['_sa_instance_state']
 
         return dictionary
 
