@@ -114,39 +114,60 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
-        try:
-            if not args:
-                raise SyntaxError()
-
-            splittedArgs = args.split(" ")
-            inst = eval("{}()".format(splittedArgs[0]))
-
-            for commandArg in splittedArgs[1:]:
-                param = commandArg.split("=")
-                key = param[0]
-                value = param[1].replace("_", " ") # .replace('"', '\\"')
-
-                if hasattr(inst, key):
-                    try:
-                        setattr(inst, key, eval(value))
-                    except Exception:
-                        pass
-
-            inst.save()
-
-            print("{}".format(inst.id))
-        except SyntaxError:
+        """Create an object of any class with given parameters"""
+        if not args:
             print("** class name missing **")
-        except NameError:
+            return
+        elif args[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
-        except IndexError:
-            pass
+            return
+
+        # Split the arguments into the class name and the parameters
+        class_name = args[0]
+        params = args[1:]
+
+        # Create a dictionary to store the key-value pairs for the object
+        obj_dict = {}
+
+        # Parse the parameters
+        for param in params:
+            # Split the parameter into the key and value
+            key, value = param.split("=")
+
+            # Strip leading and trailing whitespace from the key and value
+            key = key.strip()
+            value = value.strip()
+
+            # Check the value type and store it in the dictionary
+            if value[0] == '"':
+                # The value is a string
+                # Strip the leading and trailing quotes and unescape any internal quotes
+                value = value[1:-1].replace('\\"', '"')
+            elif "." in value:
+                # The value is a float
+                value = float(value)
+            else:
+                # The value is an integer or something else that can be cast to an integer
+                try:
+                    value = int(value)
+                except ValueError:
+                    # The value could not be cast to an integer, so skip it
+                    continue
+
+            # Store the key-value pair in the dictionary
+            obj_dict[key] = value
+
+        # Create the object
+        new_instance = HBNBCommand.classes[class_name](**obj_dict)
+
+        # Save the object and print its id
+        storage.save()
+        print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
         print("Creates a class of any type")
-        print("[Usage]: create <className>\n")
+        print("[Usage]: create <Class name> <param 1> <param 2> <param 3>...")
 
     def do_show(self, args):
         """ Method to show an individual object """
