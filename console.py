@@ -113,56 +113,29 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, arg):
-        """Create an object of any class with given parameters"""
-        if not arg:
+    def do_create(self, args):
+        """ Create an object of any class"""
+        comm = args.split(' ')
+        if not comm:
             print("** class name missing **")
             return
-        elif arg[0] not in HBNBCommand.classes:
+        elif comm[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-
-        # Split the arguments into the class name and the parameters
-        class_name = arg[0]
-        params = arg[1:]
-
-        # Create a dictionary to store the key-value pairs for the object
-        obj_dict = {}
-
-        # Parse the parameters
-        for param in params:
-            # Split the parameter into the key and value
-            key, value = param.split("=")
-
-            # Strip leading and trailing whitespace from the key and value
-            key = key.strip()
-            value = value.strip()
-
-            # Check the value type and store it in the dictionary
-            if value[0] == '"':
-                # The value is a string
-                # Strip the leading and trailing quotes and unescape any internal quotes
-                value = value[1:-1].replace('\\"', '"')
-            elif "." in value:
-                # The value is a float
-                value = float(value)
-            else:
-                # The value is an integer or something else that can be cast to an integer
-                try:
-                    value = int(value)
-                except ValueError:
-                    # The value could not be cast to an integer, so skip it
-                    continue
-
-            # Store the key-value pair in the dictionary
-            obj_dict[key] = value
-
-        # Create the object
-        new_instance = HBNBCommand.classes[class_name](**obj_dict)
-
-        # Save the object and print its id
-        storage.save()
+        new_instance = HBNBCommand.classes[comm[0]]()
+        for i in range(1, len(comm)):
+            try:
+                comm_1 = comm[i].split('=')
+                key = comm_1[0]
+                value = comm_1[1]
+                value = value.replace('_', ' ')
+                value = value.replace('\"', '')
+                if type(value) in (str, int, float):
+                    setattr(new_instance, key, value)
+            except Exception:
+                continue
         print(new_instance.id)
+        new_instance.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -357,6 +330,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
