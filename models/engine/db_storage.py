@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-"""Defines the DBStorage engine"""
+"""Defines the DBStorage engine
+model to mange DB storage using sqlAlchemy
+"""
 from models.base_model import BaseModel, Base
 from models.user import User
 from models.state import State
@@ -27,8 +29,19 @@ class DBStorage:
         db = os.getenv('HBNB_MYSQL_DB')
         dialect = 'mysql'
         driver = 'mysqldb'
-        self.__engine = create_engine(f"{dialect}://{user}:{pwd}@{host}/{db}", pool_pre_ping=True)
-        if os.getenv('HBNB_ENV') == 'test':
+        HBNB_MYSQL_USER = os.getenv('HBNB_MYSQL_USER')
+        HBNB_MYSQL_PWD = os.getenv('HBNB_MYSQL_PWD')
+        HBNB_MYSQL_HOST = os.getenv('HBNB_MYSQL_HOST')
+        HBNB_MYSQL_DB = os.getenv('HBNB_MYSQL_DB')
+        HBNB_ENV = os.getenv('HBNB_ENV')
+        exec_db = 'mysql+mysqldb://{}:{}@{}/{}'.format(
+                                            HBNB_MYSQL_USER,
+                                            HBNB_MYSQL_PWD,
+                                            HBNB_MYSQL_HOST,
+                                            HBNB_MYSQL_DB
+                                                )
+        self.__engine = create_engine(exec_db, pool_pre_ping=True)
+        if HBNB_ENV == 'test':
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
@@ -60,18 +73,19 @@ class DBStorage:
 
     def delete(self, obj=None):
         """delete from the current database session obj if not None"""
-        if obj:
+        if obj is not None:
             self.__session.delete(obj)
-        self.__session.commit()
 
     def reload(self):
         """creates all the tables in the database and creates the
         current database session using a sessionmaker and a scoped_session.
         """
         Base.metadata.create_all(self.__engine)
-        Session = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        self.__session = scoped_session(Session)
+        session_db = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        Session = scoped_session(session_db)
+        self.__session = Session()
 
     def close(self):
         """Closes and stops the session"""
+        self.reload()
         self.__session.close()
