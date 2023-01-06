@@ -8,6 +8,20 @@ from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 
+class PlaceAmenity(Base):
+    if getenv("HBNB_TYPE_STORAGE") == "db":
+        __tablename__ = "place_amenity"
+        place_id = Column(
+            String(60), ForeignKey("places.id"), nullable=False, primary_key=True
+        )
+        amenity_id = Column(
+            String(60), ForeignKey("amenities.id"), nullable=False, primary_key=True
+        )
+    else:
+        place_id = ""
+        amenity_id = ""
+
+
 class Place(BaseModel, Base):
     """A Class place with attributes bellow:
     city_id: city id
