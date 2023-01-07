@@ -19,6 +19,5 @@ class Review(BaseModel, Base):
     user_id = Column(String(60), ForeignKey("users.id"), nullable=False)
 
     def __init__(self, *args, **kwargs):
-        """Init for inherited
-        """
+        """Init for inherited"""
         super().__init__(*args, **kwargs)
