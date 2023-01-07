@@ -11,13 +11,24 @@ from models.amenity import Amenity
 from models.review import Review
 
 
-association_table = Table("place_amenity", Base.metadata,
-                          Column("place_id", String(60),
-                                 ForeignKey("places.id"),
-                                 primary_key=True, nullable=False),
-                          Column("amenity_id", String(60),
-                                 ForeignKey("amenities.id"),
-                                 primary_key=True, nullable=False))
+association_table = Table(
+    "place_amenity",
+    Base.metadata,
+    Column(
+        "place_id",
+        String(60),
+        ForeignKey("places.id"),
+        primary_key=True,
+        nullable=False,
+    ),
+    Column(
+        "amenity_id",
+        String(60),
+        ForeignKey("amenities.id"),
+        primary_key=True,
+        nullable=False,
+    ),
+)
 
 
 class Place(BaseModel, Base):
@@ -47,17 +58,20 @@ class Place(BaseModel, Base):
     longitude = Column(Float, nullable=True)
     reviews = relationship("Review", backref="place", cascade="delete")
     amenities = relationship("Amenity", secondary="place_amenity", viewonly=False)
-    amenity_ids = []
+    amenity_ids = [""]
 
     def __init__(self, *args, **kwargs):
         """initializes Place"""
         super().__init__(*args, **kwargs)
 
     if getenv("HBNB_TYPE_STORAGE") != "db":
+        reviews = relationship("Review", backref="place")
+        amenities = relationship("Amenity", secondary=place_amenity, ciewonly=False)
+    else:
+
         @property
         def reviews(self):
-            """Get a list of all linked Reviews.
-            """
+            """Get a list of all linked Reviews."""
             review_list = []
 
             for review in list(models.storage.all(Review).values()):
