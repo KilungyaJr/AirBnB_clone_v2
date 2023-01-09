@@ -11,7 +11,7 @@ from models.amenity import Amenity
 from models.review import Review
 
 
-association_table = Table("place_amenity", Base.metadata,
+place_amenity = Table("place_amenity", Base.metadata,
                           Column("place_id", String(60),
                                  ForeignKey("places.id"),
                                  primary_key=True, nullable=False),
@@ -46,7 +46,7 @@ class Place(BaseModel, Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     reviews = relationship("Review", backref="place", cascade="delete")
-    amenities = relationship("Amenity", secondary="place_amenity", viewonly=True)
+    amenities = relationship("Amenity", secondary="place_amenity", viewonly=False)
     amenity_ids = []
 
     def __init__(self, *args, **kwargs):
