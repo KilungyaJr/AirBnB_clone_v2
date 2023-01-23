@@ -38,24 +38,25 @@ def do_deploy(archive_path):
         return False
 
     archive_name = archive_path.split("/")[-1]
-    release_folder = "/data/web_static/releases/{}".format(archive_name.split(".")[0])
+    rlsFldr = "/data/web_static/releases/{}".format(archive_name.split(".")[0])
 
     with settings(warn_only=True):
         # Upload archive to /tmp/ on the web server
         put(archive_path, "/tmp/")
 
         # Uncompress archive to releases folder
-        run("mkdir -p {}".format(release_folder))
-        run("tar -xzf /tmp/{} -C {}".format(archive_name, release_folder))
+        run("mkdir -p {}".format(rlsFldr))
+        run("tar -xzf /tmp/{} -C {}".format(archive_name, rlsFldr))
 
         # Delete archive from web server
         run("rm /tmp/{}".format(archive_name))
 
         # Delete and recreate the symbolic link
         run("rm -f /data/web_static/current")
-        run("ln -s {} /data/web_static/current".format(release_folder))
+        run("ln -s {} /data/web_static/current".format(rlsFldr))
     print('New version deployed!')
     return True
+
 
 def deploy():
     """Create and distribute an archive to a web server."""
@@ -63,6 +64,7 @@ def deploy():
     if archivePath is None:
         return False
     return do_deploy(archivePath)
+
 
 def do_clean(number=0):
     """Delete out-of-date archives.
