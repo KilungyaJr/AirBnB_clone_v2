@@ -29,10 +29,7 @@ chown -R ubuntu:ubuntu /data/
 
 # Update the Nginx configuration to serve the content of '/data/web_static/current/'
 # to 'hbnb_static' (ex: https://mydomainname.tech/hbnb_static).
-loc_header="location \/hbnb\_static\/ {"
-loc_content="alias \/data\/web\_static\/current\/;"
-new_location="\n\t$loc_header\n\t\t$loc_content\n\t}\n"
-sed -i "37s/$/$new_location/" /etc/nginx/sites-available/default
+sed -i '/listen 80 default_server/a location /hbnb_static { alias /data/web_static/current/;}' /etc/nginx/sites-enabled/default
 
 # Restart Nginx
 service nginx restart
