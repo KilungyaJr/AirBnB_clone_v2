@@ -30,7 +30,7 @@ sudo chown -R ubuntu:ubuntu /data/
 # Update the Nginx configuration to serve the content of '/data/web_static/current/'
 # to 'hbnb_static' (ex: https://mydomainname.tech/hbnb_static).
 sudo sed -i 's/root \/usr\/share\/nginx\/html;/root \/data\/web_static\/current\/;/' /etc/nginx/sites-available/default
-sudo sed -i 's/#try_files $uri $uri\/ =404;/try_files $uri $uri\/ @hbnb_static;/' /etc/nginx/sites-available/default
+sudo sed -i "s/#try_files $uri $uri\/ =404;/try_files $uri $uri\/ @hbnb_static;/" /etc/nginx/sites-available/default
 echo 'location @hbnb_static { alias /data/web_static/current/; }' | sudo tee -a /etc/nginx/sites-available/default
 
 # Restart Nginx
