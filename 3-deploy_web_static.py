@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 from datetime import datetime
-from fabric.api import env, local, put, run, settings
+from fabric.api import *
+from os import path
 
-env.hosts = ['52.91.121.190', '100.26.168.135']
+env.hosts = ['100.26.235.136', '54.165.230.119']
 
 
 def do_pack():
@@ -28,38 +29,35 @@ def do_pack():
     else:
         return None
 
-
 def do_deploy(archive_path):
+    """Distributes an .tgz archive through web servers
     """
-    Distributes an archive to your web servers
-    """
-    if not local("test -e {}".format(archive_path), capture=True).succeeded:
-        return False
 
-    archive_name = archive_path.split("/")[-1]
-    rlsFldr = "/data/web_static/releases/{}".format(archive_name.split(".")[0])
+    if path.exists(archive_path):
+        archive = archive_path.split('/')[1]
+        a_path = "/tmp/{}".format(archive)
+        folder = archive.split('.')[0]
+        f_path = "/data/web_static/releases/{}/".format(folder)
 
-    with settings(warn_only=True):
-        # Upload archive to /tmp/ on the web server
-        put(archive_path, "/tmp/")
+        put(archive_path, a_path)
+        run("mkdir -p {}".format(f_path))
+        run("tar -xzf {} -C {}".format(a_path, f_path))
+        run("rm {}".format(a_path))
+        run("mv -f {}web_static/* {}".format(f_path, f_path))
+        run("rm -rf {}web_static".format(f_path))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {} /data/web_static/current".format(f_path))
 
-        # Uncompress archive to releases folder
-        run("mkdir -p {}".format(rlsFldr))
-        run("tar -xzf /tmp/{} -C {}".format(archive_name, rlsFldr))
+        print('New version deployed!')
 
-        # Delete archive from web server
-        run("rm /tmp/{}".format(archive_name))
+        return True
 
-        # Delete and recreate the symbolic link
-        run("rm -f /data/web_static/current")
-        run("ln -s {} /data/web_static/current".format(rlsFldr))
-    print('New version deployed!')
-    return True
-
+    return False
 
 def deploy():
-    """Create and distribute an archive to a web server."""
-    archivePath = do_pack()
-    if archivePath is None:
+    """Creates and distributes an archive to a web server"""
+    filepath = do_pack()
+    if filepath is None:
         return False
-    return do_deploy(archivePath)
+    d = do_deploy(filepath)
+    return d
