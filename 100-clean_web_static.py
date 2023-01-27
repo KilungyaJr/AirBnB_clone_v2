@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 from datetime import datetime
-from fabric.api import env, local, put, run, settings
-import os
+from fabric.api import *
+from os import path
 
-env.hosts = ['52.91.121.190', '100.26.168.135']
+env.hosts = ['100.26.235.136', '54.165.230.119']
 
 
 def do_pack():
@@ -31,58 +31,53 @@ def do_pack():
 
 
 def do_deploy(archive_path):
+    """Distributes an .tgz archive through web servers
     """
-    Distributes an archive to your web servers
-    """
-    if not local("test -e {}".format(archive_path), capture=True).succeeded:
-        return False
 
-    archive_name = archive_path.split("/")[-1]
-    rlsFldr = "/data/web_static/releases/{}".format(archive_name.split(".")[0])
+    if path.exists(archive_path):
+        archive = archive_path.split('/')[1]
+        a_path = "/tmp/{}".format(archive)
+        folder = archive.split('.')[0]
+        f_path = "/data/web_static/releases/{}/".format(folder)
 
-    with settings(warn_only=True):
-        # Upload archive to /tmp/ on the web server
-        put(archive_path, "/tmp/")
+        put(archive_path, a_path)
+        run("mkdir -p {}".format(f_path))
+        run("tar -xzf {} -C {}".format(a_path, f_path))
+        run("rm {}".format(a_path))
+        run("mv -f {}web_static/* {}".format(f_path, f_path))
+        run("rm -rf {}web_static".format(f_path))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {} /data/web_static/current".format(f_path))
 
-        # Uncompress archive to releases folder
-        run("mkdir -p {}".format(rlsFldr))
-        run("tar -xzf /tmp/{} -C {}".format(archive_name, rlsFldr))
+        print('New version deployed!')
 
-        # Delete archive from web server
-        run("rm /tmp/{}".format(archive_name))
+        return True
 
-        # Delete and recreate the symbolic link
-        run("rm -f /data/web_static/current")
-        run("ln -s {} /data/web_static/current".format(rlsFldr))
-    print('New version deployed!')
-    return True
+    return False
 
 
 def deploy():
-    """Create and distribute an archive to a web server."""
-    archivePath = do_pack()
-    if archivePath is None:
+    """Creates and distributes an archive to a web server"""
+    filepath = do_pack()
+    if filepath is None:
         return False
-    return do_deploy(archivePath)
+    d = do_deploy(filepath)
+    return d
 
 
 def do_clean(number=0):
-    """Delete out-of-date archives.
-    Args:
-        number (int): The number of archives to keep.
-    If number is 0 or 1, keeps only the most recent archive. If
-    number is 2, keeps the most and second-most recent archives,
-    etc.
-    """
-    number = 1 if int(number) == 0 else int(number)
-
-    archives = sorted(os.listdir("versions"))
-    [archives.pop() for i in range(number)]
-    with lcd("versions"):
-        [local("rm ./{}".format(a)) for a in archives]
-
-    with cd("/data/web_static/releases"):
-        archives = run("ls -tr").split()
-        archives = [a for a in archives if "web_static_" in a]
-        [archives.pop() for i in range(number)]
-        [run("rm -rf ./{}".format(a)) for a in archives]
+    """Deletes out-of-date archives"""
+    files = local("ls -1t versions", capture=True)
+    file_names = files.split("\n")
+    n = int(number)
+    if n in (0, 1):
+        n = 1
+    for i in file_names[n:]:
+        local("rm versions/{}".format(i))
+    dir_server = run("ls -1t /data/web_static/releases")
+    dir_server_names = dir_server.split("\n")
+    for i in dir_server_names[n:]:
+        if i is 'test':
+            continue
+        run("rm -rf /data/web_static/releases/{}"
+            .format(i))
