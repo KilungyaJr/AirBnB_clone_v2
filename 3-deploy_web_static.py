@@ -29,6 +29,7 @@ def do_pack():
     else:
         return None
 
+
 def do_deploy(archive_path):
     """Distributes an .tgz archive through web servers
     """
@@ -53,6 +54,7 @@ def do_deploy(archive_path):
         return True
 
     return False
+
 
 def deploy():
     """Creates and distributes an archive to a web server"""
