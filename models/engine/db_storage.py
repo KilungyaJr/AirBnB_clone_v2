@@ -20,8 +20,8 @@ class DBStorage:
     __session = None
 
     def __init__(self):
-        """creates the __engine attribute, which is linked to the MySQL database
-        specified by the environment variables
+        """creates the __engine attribute, which is linked to
+        the MySQL database specified by the environment variables
         """
         user = os.getenv('HBNB_MYSQL_USER')
         pwd = os.getenv('HBNB_MYSQL_PWD')
@@ -45,8 +45,8 @@ class DBStorage:
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """queries the current database session for all objects of a given class
-        (or all classes if no class is specified),
+        """queries the current database session for all objects
+        of a given class (or all classes if no class is specified),
         and returns a dictionary with the objects
         """
         result = {}
