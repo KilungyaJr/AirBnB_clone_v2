@@ -3,7 +3,6 @@
 model to mange DB storage using sqlAlchemy
 """
 from models.base_model import BaseModel, Base
-from sqlalchemy.ext.declarative import declarative_base
 from models.user import User
 from models.state import State
 from models.city import City
