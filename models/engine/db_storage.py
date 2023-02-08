@@ -2,6 +2,7 @@
 """Defines the DBStorage engine
 model to mange DB storage using sqlAlchemy
 """
+import models
 from models.base_model import BaseModel, Base
 from models.user import User
 from models.state import State
@@ -86,5 +87,8 @@ class DBStorage:
         self.__session = Session()
 
     def close(self):
-        """Closes and stops the session"""
+        """
+            Closing the session
+        """
+        self.reload()
         self.__session.close()
