@@ -2,7 +2,6 @@
 """Defines the DBStorage engine
 model to mange DB storage using sqlAlchemy
 """
-import models
 from models.base_model import BaseModel, Base
 from models.user import User
 from models.state import State
@@ -21,8 +20,8 @@ class DBStorage:
     __session = None
 
     def __init__(self):
-        """creates the __engine attribute, which is linked to
-        the MySQL database specified by the environment variables
+        """creates the __engine attribute, which is linked
+        to the MySQL database specified by the environment variables
         """
         user = os.getenv('HBNB_MYSQL_USER')
         pwd = os.getenv('HBNB_MYSQL_PWD')
@@ -87,8 +86,6 @@ class DBStorage:
         self.__session = Session()
 
     def close(self):
-        """
-            Closing the session
-        """
+        """Closes and stops the session"""
         self.reload()
         self.__session.close()
